@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction to FastAPI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/black.min.css">
+<style>
+  :root {
+    --amber:  #f5a623;
+    --green:  #4ecb8d;
+    --purple: #a78bfa;
+    --blue:   #60a5fa;
+    --red:    #f87171;
+    --bg:     #0a0a0f;
+    --bg2:    #10101a;
+    --bg3:    #181824;
+    --border: #2a2a3a;
+    --text:   #e8e8f0;
+    --muted:  #8888a8;
+  }
+
+  .reveal-viewport { background: var(--bg); }
+  .reveal .slides section { background: transparent; }
+
+  .reveal { font-family: 'DM Sans', sans-serif; color: var(--text); }
+  .reveal h1, .reveal h2, .reveal h3 { font-family: 'Playfair Display', serif; font-weight: 700; }
+  .reveal h1 { font-size: 1.6em; color: var(--amber); line-height: 1.1; }
+  .reveal h2 { font-size: 1.1em; color: var(--amber); margin-bottom: .2em; }
+  .reveal h3 { font-size: .78em; color: var(--green); margin-bottom: .15em; }
+  .reveal p  { font-size: .56em; line-height: 1.45; color: var(--text); }
+  .reveal li { font-size: .54em; line-height: 1.45; margin-bottom: .1em; }
+  .reveal code { font-family: 'JetBrains Mono', monospace; font-size: .72em; }
+  .reveal pre  { box-shadow: none; background: var(--bg3); border: 1px solid var(--border);
+                 border-radius: 6px; padding: .3em .5em; margin: .25em 0; }
+  .reveal pre code { font-size: .52em; line-height: 1.35; background: transparent; color: #cdd6f4; }
+
+  .slide-hdr {
+    display: flex; align-items: center; gap: .4em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: .2em; margin-bottom: .3em;
+  }
+  .slide-hdr .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .42em; font-weight: 500;
+    color: var(--bg); background: var(--amber);
+    padding: .1em .4em; border-radius: 3px;
+    letter-spacing: .04em;
+  }
+  .slide-hdr h2 { margin: 0; font-size: .95em; }
+
+  .cols   { display: grid; gap: .5em; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cols-6040 { grid-template-columns: 6fr 4fr; }
+  .cols-4060 { grid-template-columns: 4fr 6fr; }
+
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: .35em .6em;
+  }
+  .card.amber { border-left: 3px solid var(--amber); }
+  .card.green { border-left: 3px solid var(--green); }
+  .card.purple{ border-left: 3px solid var(--purple); }
+  .card.blue  { border-left: 3px solid var(--blue); }
+  .card.red   { border-left: 3px solid var(--red); }
+  .card h3 { font-size: .64em; margin: 0 0 .12em; }
+  .card p  { font-size: .52em; margin: 0; color: #b8b8d0; }
+  .card ul { margin: 0; padding-left: 1em; }
+  .card li { font-size: .52em; color: #b8b8d0; margin-bottom: .02em; }
+
+  .reveal table { width: 100%; border-collapse: collapse; font-size: .5em; }
+  .reveal table th { background: var(--bg3); color: var(--amber); font-weight: 600;
+                     padding: .2em .4em; border: 1px solid var(--border); text-align: left; }
+  .reveal table td { padding: .18em .4em; border: 1px solid var(--border); color: #ccc; }
+  .reveal table tr:nth-child(even) td { background: #0e0e18; }
+
+  .a  { color: var(--amber); font-weight: 600; }
+  .g  { color: var(--green); font-weight: 600; }
+  .p  { color: var(--purple); font-weight: 600; }
+  .b  { color: var(--blue); font-weight: 600; }
+  .r  { color: var(--red); font-weight: 600; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  svg.diagram { display: block; margin: 0 auto; overflow: visible; }
+
+  .pill {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: .44em; padding: .08em .4em; border-radius: 99px;
+    border: 1px solid; margin: 0 .08em;
+  }
+  .pill.amber { color: var(--amber); border-color: var(--amber); }
+  .pill.green { color: var(--green); border-color: var(--green); }
+  .pill.purple{ color: var(--purple); border-color: var(--purple); }
+  .pill.blue  { color: var(--blue); border-color: var(--blue); }
+
+  .reveal .slide-footer { display: none; }
+  .title-slide h1 { font-size: 1.8em; }
+  .title-slide .subtitle {
+    font-size: .7em; color: var(--green); font-family: 'DM Sans', sans-serif;
+    font-weight: 300; letter-spacing: .04em; margin: .3em 0 .6em;
+  }
+  .title-slide .meta { font-size: .48em; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  .ss-row {
+    display: flex; gap: .25em; align-items: center;
+    margin: .1em 0; font-size: .55em; font-family: 'JetBrains Mono', monospace;
+  }
+  .ss-node {
+    padding: .2em .55em; border-radius: 5px; font-size: .9em;
+    background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  }
+  .ss-node.active { background: #1a2a1a; border-color: var(--green); color: var(--green); }
+  .ss-node.done   { background: #1a1a2a; border-color: var(--purple); color: var(--purple); }
+  .ss-arrow { color: var(--amber); }
+  .ss-label { font-size: .8em; color: var(--muted); margin-left: .3em; }
+
+  .reveal ul, .reveal ol { margin: .15em 0 .15em 1em; }
+  .reveal .slides > section { display: flex !important; flex-direction: column !important; overflow-y: auto !important; align-items: stretch !important; justify-content: flex-start !important; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ═══════════════════════════════ SLIDE 01 — TITLE ═══════════════════════════════ -->
+<section class="title-slide" data-background-color="#0a0a0f">
+  <div style="text-align:left; max-width:820px; margin:0 auto; padding: 1em 0;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:.5em; color:var(--muted); margin-bottom:.4em; letter-spacing:.1em;">
+      TECHNICAL PRESENTATION
+    </div>
+    <h1>Introduction to<br>FastAPI</h1>
+    <div class="subtitle">A modern Python framework where type hints become the API</div>
+    <div style="width:60px; height:3px; background:var(--amber); margin-bottom:1.4em;"></div>
+    <div style="display:flex; gap:1.2em; flex-wrap:wrap; margin-bottom:1em;">
+      <span class="pill amber">Pydantic v2</span>
+      <span class="pill green">Starlette / ASGI</span>
+      <span class="pill purple">Depends()</span>
+      <span class="pill blue">OpenAPI · ReDoc</span>
+    </div>
+    <div class="ss-row" style="margin-top:0.6em;">
+      <span class="ss-node active">📝 type hints</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node active">🧱 validation</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node active">🔌 inject</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node active">⚡ async</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node done">📜 OpenAPI</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node done">🚀 deploy</span>
+    </div>
+    <p style="max-width:620px; color:#a0a0c0; font-size:.56em; line-height:1.5; margin-top:1em;">
+      Type hints drive validation, serialisation, dependency injection and OpenAPI generation &mdash; one declaration, four behaviours, no decorators stack to learn.
+    </p>
+    <div class="meta" style="margin-top:1.4em;">
+      Type &nbsp;·&nbsp; Validate &nbsp;·&nbsp; Inject &nbsp;·&nbsp; Async &nbsp;·&nbsp; Document &nbsp;·&nbsp; Deploy
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 02 — TOPICS ═══════════════════════════════ -->
+<section data-background-color="#0a0a0f">
+  <div class="slide-hdr"><span class="tag">02</span><h2>Topics</h2></div>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber">
+        <h3 class="a">Foundations</h3>
+        <ul>
+          <li>What FastAPI is &mdash; origins, Sebastián Ramírez, Starlette + Pydantic</li>
+          <li>Why FastAPI &mdash; type-driven design, performance, ergonomics</li>
+          <li>Installation, the first endpoint, <code>uvicorn</code></li>
+          <li>Path operations &mdash; methods, path / query / body params</li>
+          <li>Pydantic v2 &mdash; models, validators, field types</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:0.5em;">
+        <h3 class="g">Behaviour</h3>
+        <ul>
+          <li>Dependency injection with <code>Depends()</code></li>
+          <li>Sub-dependencies, generators, <code>yield</code> for cleanup</li>
+          <li>Async vs sync &mdash; when each runs and where</li>
+          <li>Authentication &mdash; OAuth2 password, JWT, API keys</li>
+          <li>Authorisation &mdash; scopes, dependencies as policies</li>
+          <li>Background tasks, streaming, file uploads</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple">
+        <h3 class="p">Integration</h3>
+        <ul>
+          <li>Database &mdash; SQLAlchemy 2.0 async, Tortoise, SQLModel</li>
+          <li>Pydantic Settings &mdash; typed config from env / .env</li>
+          <li>Middleware &amp; lifespan events</li>
+          <li>WebSockets &amp; SSE</li>
+          <li>Testing &mdash; <code>TestClient</code>, async tests, fixtures</li>
+          <li>OpenAPI &mdash; tags, descriptions, ReDoc, custom schema</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:0.5em;">
+        <h3 class="b">Production</h3>
+        <ul>
+          <li>Performance &mdash; uvicorn, gunicorn, workers, async pitfalls</li>
+          <li>Deployment &mdash; Docker, K8s, ASGI servers compared</li>
+          <li>Observability &mdash; logging, metrics, OpenTelemetry</li>
+          <li>Security &mdash; CORS, HTTPS, rate limiting, request size</li>
+          <li>Comparisons &mdash; Flask, Django REST, Litestar, Starlette</li>
+          <li>Production patterns &mdash; lifespan, dependency overrides</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 03 — WHAT IS FASTAPI ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">03</span><h2>What Is FastAPI?</h2></div>
+  <p>FastAPI is a Python web framework created by <span class="a">Sebasti&aacute;n Ram&iacute;rez (tiangolo)</span> in 2018. It builds on <span class="g">Starlette</span> (ASGI toolkit) and <span class="p">Pydantic v2</span> (data validation in Rust) to turn type hints into HTTP behaviour.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>The two-line pitch</h3>
+<pre><code class="language-python">from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class User(BaseModel):
+    email: str
+    name: str
+    age: int | None = None
+
+@app.post('/users', response_model=User, status_code=201)
+async def create_user(user: User) -&gt; User:
+    return user
+# &rarr; validation, deserialisation, serialisation, OpenAPI,
+#    Swagger UI, ReDoc &mdash; all from the type hints alone.</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>What FastAPI owns</h3>
+        <ul>
+          <li><span class="g">Routing</span> &mdash; path operations, path / query / body params</li>
+          <li><span class="g">Validation</span> &mdash; via Pydantic v2 (Rust-backed, fast)</li>
+          <li><span class="g">Serialisation</span> &mdash; response models, exclude / include</li>
+          <li><span class="g">DI</span> &mdash; <code>Depends()</code> with sub-deps and yield-cleanup</li>
+          <li><span class="g">Docs</span> &mdash; OpenAPI 3.1, Swagger UI, ReDoc, schema export</li>
+          <li><span class="g">WebSockets</span>, <span class="g">SSE</span>, <span class="g">background tasks</span></li>
+          <li>Test client (<code>httpx</code>-based)</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Where it sits in the stack</h3>
+        <table>
+          <thead><tr><th>Layer</th><th>Component</th></tr></thead>
+          <tbody>
+            <tr><td>App</td><td><span class="p">FastAPI</span> &mdash; routes, DI, OpenAPI</td></tr>
+            <tr><td>HTTP</td><td><span class="p">Starlette</span> &mdash; ASGI app, middleware, WebSocket</td></tr>
+            <tr><td>Validation</td><td><span class="p">Pydantic v2</span> &mdash; <code>pydantic-core</code> (Rust)</td></tr>
+            <tr><td>Server</td><td>Uvicorn / Hypercorn / Granian (ASGI)</td></tr>
+            <tr><td>Process mgr</td><td>Gunicorn (with uvicorn workers) / systemd</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Who uses it</h3>
+        <ul>
+          <li>Microsoft (Azure SDK examples), Uber, Netflix internal services</li>
+          <li>Most Python ML / LLM serving stacks &mdash; Hugging Face TGI, OpenAI cookbook examples, vLLM API server</li>
+          <li>Anthropic / OpenAI / Cohere SDK example servers</li>
+          <li>Cited as the third-most-used Python web framework after Django and Flask in the JetBrains 2024 survey</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>What it is not</h3>
+        <p>Not a full-stack framework. No ORM (you bring SQLAlchemy / SQLModel / Tortoise). No template engine (you bring Jinja2). No admin / auth UI (you bring your own). It's a <em>web API</em> framework.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 04 — WHY FASTAPI ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">04</span><h2>Why FastAPI?</h2></div>
+  <p>Three claims, each backed by something real: <span class="a">type-driven design</span>, <span class="g">performance close to Node / Go</span>, <span class="p">developer ergonomics</span> from one declaration doing four jobs.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>One declaration, four behaviours</h3>
+<pre><code class="language-python">@app.get('/items/{item_id}')
+def read_item(
+    item_id: int,                          # path &mdash; coerced &amp; validated
+    q: str | None = None,                  # query &mdash; optional
+    skip: int = 0, limit: int = 100,       # query &mdash; defaults
+    user: User = Depends(current_user),    # injected
+):
+    ...
+
+# &rarr; routing, type coercion, validation, OpenAPI param entries,
+#    DI, automatic error responses with location info &mdash; one signature.</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Performance</h3>
+        <ul>
+          <li>Pydantic v2 core is in Rust &mdash; validation is &gt; 10&times; v1</li>
+          <li>Async-first &mdash; one event loop, thousands of in-flight requests</li>
+          <li>Comparable to Node / Go for I/O-bound APIs in independent benchmarks</li>
+          <li>Sync paths run in a thread pool &mdash; mixing sync and async is graceful</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>What you give up &mdash; honestly</h3>
+        <ul>
+          <li><span class="r">No batteries</span> &mdash; you assemble ORM, migrations, auth from libraries</li>
+          <li><span class="r">Async-first culture</span> &mdash; sync-only DBs (e.g. some legacy drivers) need extra care</li>
+          <li><span class="r">Pydantic learning curve</span> &mdash; v1 vs v2 differences still trip teams up</li>
+          <li><span class="r">DI is opinionated</span> &mdash; <code>Depends()</code> is great, but unusual if you've come from Spring / DI containers</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>When FastAPI is the right tool</h3>
+        <ul>
+          <li>JSON / OpenAPI HTTP APIs &mdash; the original sweet spot</li>
+          <li>ML / LLM model servers &mdash; PyTorch, transformers, vLLM</li>
+          <li>Internal microservices in a Python house</li>
+          <li>Anywhere you want OpenAPI as a contract for free</li>
+          <li>Background-task / webhook receivers</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>When something else fits better</h3>
+        <ul>
+          <li>Server-rendered HTML apps with auth, admin, ORM &rarr; <span class="r">Django</span></li>
+          <li>Tiny single-page proof-of-concepts &rarr; <span class="r">Flask</span></li>
+          <li>Need msgspec speed and stricter type discipline &rarr; <span class="r">Litestar</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 05 — INSTALLATION ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">05</span><h2>Installation &amp; First Endpoint</h2></div>
+  <p>FastAPI ships as a regular Python package. The recommended install pulls in <span class="a">uvicorn</span> (ASGI server), <span class="g">httpx</span> (test client), and a curated set of optional extras &mdash; one command and you're live.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Install</h3>
+<pre><code class="language-bash"># the recommended bundle &mdash; FastAPI + uvicorn + extras
+uv add 'fastapi[standard]'
+
+# minimal &mdash; just the framework
+uv add fastapi
+uv add 'uvicorn[standard]'
+
+# pip equivalent
+pip install 'fastapi[standard]'
+
+# version
+uv run python -c 'import fastapi; print(fastapi.__version__)'</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>The first app</h3>
+<pre><code class="language-python"># app/main.py
+from fastapi import FastAPI
+
+app = FastAPI(title='Hello API', version='0.1.0')
+
+@app.get('/healthz')
+def health() -&gt; dict:
+    return {'ok': True}
+
+@app.get('/echo/{msg}')
+async def echo(msg: str) -&gt; dict:
+    return {'msg': msg}</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Run it</h3>
+<pre><code class="language-bash"># dev: hot reload, single worker
+uv run fastapi dev app/main.py
+# &rarr; http://127.0.0.1:8000
+# &rarr; http://127.0.0.1:8000/docs   (Swagger UI)
+# &rarr; http://127.0.0.1:8000/redoc  (ReDoc)
+
+# prod-style: uvicorn directly
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Anatomy of a path operation</h3>
+        <ul>
+          <li><span class="p">Decorator</span> &mdash; <code>@app.get/.post/.put/.patch/.delete</code> sets method &amp; path</li>
+          <li><span class="p">Function name</span> &mdash; cosmetic; appears as the OpenAPI <code>operationId</code></li>
+          <li><span class="p">Parameters</span> &mdash; FastAPI inspects type + default &amp; classifies as path / query / body / dep</li>
+          <li><span class="p">Return type</span> &mdash; used as <code>response_model</code> if not overridden; drives serialisation</li>
+        </ul>
+      </div>
+      <div class="card amber" style="margin-top:.3em;"><h3>Project layout that scales</h3>
+<pre><code class="language-text">app/
+├── main.py              # creates FastAPI(), includes routers
+├── api/
+│   ├── deps.py          # shared dependencies
+│   ├── v1/
+│   │   ├── users.py     # APIRouter
+│   │   └── items.py
+│   └── v1/__init__.py
+├── core/
+│   ├── config.py        # pydantic Settings
+│   ├── security.py
+│   └── logging.py
+├── schemas/             # pydantic models (DTOs)
+├── models/              # SQLAlchemy ORM models
+├── services/            # domain logic
+├── db/                  # session, migrations
+└── tests/</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 06 — PATH OPERATIONS ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">06</span><h2>Path Operations &mdash; Params &amp; Responses</h2></div>
+  <p>Parameters are classified by their <span class="a">type</span> and <span class="g">where they're declared</span>. FastAPI never guesses &mdash; it follows a single rule: <code>Path</code>, <code>Query</code>, <code>Body</code>, <code>Header</code>, <code>Cookie</code> overrides; otherwise scalar &rarr; query, model &rarr; body.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>The classification rule</h3>
+<pre><code class="language-python">from fastapi import Query, Path, Header, Cookie, Body
+from typing import Annotated
+
+@app.get('/users/{user_id}/posts')
+def list_posts(
+    user_id: Annotated[int, Path(ge=1)],
+    # query params with constraints
+    page:  Annotated[int, Query(ge=1)] = 1,
+    size:  Annotated[int, Query(ge=1, le=100)] = 20,
+    q:     Annotated[str | None, Query(max_length=64)] = None,
+    # header
+    x_request_id: Annotated[str | None, Header()] = None,
+    # cookie
+    session: Annotated[str | None, Cookie()] = None,
+):
+    ...</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Body &mdash; one model or many fields</h3>
+<pre><code class="language-python">from pydantic import BaseModel
+
+class ItemCreate(BaseModel):
+    name: str
+    price: float
+
+@app.post('/items')
+def create(item: ItemCreate):     # whole body
+    ...
+
+@app.post('/items/multi')
+def create2(
+    item: ItemCreate,
+    user: UserStub,
+    importance: Annotated[int, Body(ge=1, le=5)] = 1,
+):
+    # body becomes { "item": ..., "user": ..., "importance": ... }
+    ...</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Response models &amp; status</h3>
+<pre><code class="language-python">from fastapi import status
+
+class ItemRead(BaseModel):
+    id: int
+    name: str
+    price: float
+
+@app.post('/items',
+          response_model=ItemRead,
+          status_code=status.HTTP_201_CREATED,
+          tags=['items'],
+          summary='Create an item',
+          response_description='The created item')
+def create(item: ItemCreate) -&gt; ItemRead:
+    return ItemRead(id=42, **item.model_dump())</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Multiple responses, error shapes</h3>
+<pre><code class="language-python">from fastapi import HTTPException
+
+class Error(BaseModel):
+    code: str
+    message: str
+
+@app.get('/items/{id}',
+         response_model=ItemRead,
+         responses={
+           404: {'model': Error, 'description': 'Not found'},
+           409: {'model': Error, 'description': 'Conflict'},
+         })
+def get(id: int):
+    if id &gt; 1000:
+        raise HTTPException(404, detail='not found')
+    return ItemRead(id=id, name='x', price=1.0)</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>The Annotated-first style</h3>
+        <p>FastAPI 0.95+ recommends <code>Annotated[T, Query(...)]</code> over <code>= Query(...)</code> default values &mdash; lets type checkers see the real type, plays nicely with stricter mypy / pyright settings, and reads better in long signatures.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 07 — PYDANTIC ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">07</span><h2>Pydantic v2 &mdash; The Validation Engine</h2></div>
+  <p>Pydantic v2 (released 2023) rewrote the validation core in Rust. It is what makes FastAPI fast, strict, and informative &mdash; and learning Pydantic is most of learning FastAPI.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Models &amp; field constraints</h3>
+<pre><code class="language-python">from pydantic import BaseModel, Field, EmailStr, HttpUrl
+from datetime import datetime
+from decimal import Decimal
+
+class User(BaseModel):
+    id:       int
+    email:    EmailStr
+    name:     str = Field(min_length=1, max_length=120)
+    role:     Literal['user', 'admin'] = 'user'
+    avatar:   HttpUrl | None = None
+    balance:  Decimal = Field(decimal_places=2)
+    created:  datetime
+    metadata: dict[str, str] = {}
+
+# parse / validate
+u = User.model_validate(payload)        # raises ValidationError on bad input
+u = User.model_validate_json(raw_bytes) # parse JSON directly &mdash; faster than json.loads + .model_validate</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Field validators</h3>
+<pre><code class="language-python">from pydantic import field_validator, model_validator
+
+class Order(BaseModel):
+    qty:  int
+    unit_price: Decimal
+    total: Decimal
+
+    @field_validator('qty')
+    @classmethod
+    def positive(cls, v):
+        if v &lt;= 0: raise ValueError('qty must be positive')
+        return v
+
+    @model_validator(mode='after')
+    def check_total(self):
+        if self.total != self.qty * self.unit_price:
+            raise ValueError('total mismatch')
+        return self</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Serialisation &mdash; <code>model_dump</code></h3>
+<pre><code class="language-python">u.model_dump()              # &rarr; dict
+u.model_dump(mode='json')   # JSON-compatible (Decimal/datetime as str)
+u.model_dump_json()         # &rarr; bytes / str
+u.model_dump(exclude={'metadata'})
+u.model_dump(include={'id', 'email'})
+u.model_dump(by_alias=True, exclude_none=True)
+
+# computed fields surface in serialisation
+class Box(BaseModel):
+    w: float; h: float; d: float
+    @computed_field
+    def volume(self) -&gt; float: return self.w * self.h * self.d</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Common types you'll reach for</h3>
+        <table>
+          <thead><tr><th>Type</th><th>Use</th></tr></thead>
+          <tbody>
+            <tr><td><code>EmailStr</code></td><td>Validated email (needs <code>email-validator</code>)</td></tr>
+            <tr><td><code>HttpUrl</code> · <code>AnyHttpUrl</code></td><td>URL with scheme/host parsing</td></tr>
+            <tr><td><code>UUID4</code> · <code>UUID7</code></td><td>UUID with version check</td></tr>
+            <tr><td><code>SecretStr</code></td><td>Hidden in <code>repr</code> / dump</td></tr>
+            <tr><td><code>conlist</code> · <code>conint</code></td><td>Constrained list / int</td></tr>
+            <tr><td><code>Annotated[..., AfterValidator(f)]</code></td><td>Plug a function in</td></tr>
+            <tr><td><code>RootModel[list[X]]</code></td><td>Top-level list / scalar</td></tr>
+            <tr><td><code>Field(discriminator='kind')</code></td><td>Tagged union</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 08 — DEPENDS ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">08</span><h2>Dependency Injection with <code>Depends()</code></h2></div>
+  <p>FastAPI's signature feature: anything that can be a parameter can be a <span class="a">dependency</span>. Dependencies compose, can have their own dependencies, and can yield to clean up &mdash; replacing what a DI container does in other ecosystems.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>The basic shape</h3>
+<pre><code class="language-python">from fastapi import Depends
+
+# any callable can be a dependency
+def common_paginate(
+    page: int = 1,
+    size: int = 20,
+) -&gt; dict:
+    return {'page': page, 'size': size}
+
+@app.get('/items')
+def list_items(
+    p: Annotated[dict, Depends(common_paginate)],
+):
+    return {'page': p['page'], 'size': p['size']}
+
+# implicit form omitting the function in Depends()
+def get_db() -&gt; Session: ...
+@app.get('/u/{id}')
+def by_id(id: int, db: Annotated[Session, Depends(get_db)]):
+    ...</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Yield &mdash; setup / teardown</h3>
+<pre><code class="language-python">from sqlalchemy.orm import Session
+from app.db import SessionLocal
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db          # the value passed to the handler
+    finally:
+        db.close()        # runs after response is sent
+
+# any exception in the handler &rarr; the finally still runs.</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Sub-dependencies and policies</h3>
+<pre><code class="language-python">def current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db:    Annotated[Session, Depends(get_db)],
+) -&gt; User:
+    user = decode_and_load(token, db)
+    if not user: raise HTTPException(401)
+    return user
+
+def require_admin(
+    user: Annotated[User, Depends(current_user)],
+) -&gt; User:
+    if user.role != 'admin': raise HTTPException(403)
+    return user
+
+@app.delete('/users/{id}')
+def remove(id: int,
+           _admin: Annotated[User, Depends(require_admin)]):
+    ...</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Where to attach dependencies</h3>
+        <ul>
+          <li><span class="b">Per-handler</span> &mdash; <code>def f(x = Depends(dep))</code></li>
+          <li><span class="b">Per-router</span> &mdash; <code>APIRouter(dependencies=[Depends(verify_api_key)])</code></li>
+          <li><span class="b">Per-app</span> &mdash; <code>FastAPI(dependencies=[...])</code> for global guards</li>
+          <li><span class="b">As policy</span> &mdash; raise <code>HTTPException</code> in the dep; never reach the handler</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't fight the cache</h3>
+        <p>Dependencies are <em>cached per request</em>: if <code>get_db</code> is in three deps in the same request, you get one session. To opt out: <code>Depends(get_db, use_cache=False)</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 09 — ASYNC ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">09</span><h2>Async vs Sync &mdash; When Each Runs</h2></div>
+  <p>FastAPI runs <span class="a">async path operations on the event loop</span>. Sync ones run in a <span class="g">thread pool</span> (anyio). Mixing is fine; getting the boundary right is the difference between fast and stalled.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>The decision tree</h3>
+        <ul>
+          <li><span class="a">All your I/O is async-aware</span> (httpx, asyncpg, aiokafka) &rarr; declare <code>async def</code> and <code>await</code> normally</li>
+          <li><span class="a">Some I/O is sync-only</span> (psycopg2, requests, openai with the sync client) &rarr; declare the handler <code>def</code>; FastAPI runs it in the threadpool</li>
+          <li><span class="r">Never</span> mix blocking I/O inside an <code>async def</code> &mdash; one stalled handler stalls every other request on the loop</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Async handler &mdash; fully async stack</h3>
+<pre><code class="language-python">import httpx
+
+@app.get('/weather/{city}')
+async def weather(city: str):
+    async with httpx.AsyncClient(timeout=5) as c:
+        r = await c.get(f'https://api.weather/{city}')
+        r.raise_for_status()
+        return r.json()</code></pre>
+      </div>
+      <div class="card purple" style="margin-top:.3em;"><h3>Sync handler &mdash; blocking work</h3>
+<pre><code class="language-python">import requests
+
+@app.get('/legacy/{q}')
+def legacy(q: str):              # def, not async def
+    # runs in threadpool &mdash; main loop unblocked
+    r = requests.get(f'https://legacy/{q}', timeout=5)
+    return r.json()</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card blue"><h3>Run sync work from async</h3>
+<pre><code class="language-python">from fastapi.concurrency import run_in_threadpool
+from anyio import to_thread
+
+@app.post('/render')
+async def render(req: RenderReq):
+    # CPU-bound or sync-only call from an async handler
+    img = await run_in_threadpool(make_pdf, req)
+    # equivalent:
+    img2 = await to_thread.run_sync(make_pdf, req)
+    return {'size': len(img)}</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>The classic foot-gun</h3>
+<pre><code class="language-python"># BAD &mdash; time.sleep blocks the event loop;
+# every request to ANY endpoint stalls for 2s
+@app.get('/slow')
+async def slow():
+    time.sleep(2)         # blocking!
+    return {'ok': True}
+
+# GOOD
+import asyncio
+@app.get('/slow')
+async def slow():
+    await asyncio.sleep(2)
+    return {'ok': True}</code></pre>
+      </div>
+      <div class="card amber" style="margin-top:.3em;"><h3>CPU-bound? Off the loop entirely</h3>
+        <ul>
+          <li><span class="a">Threads</span> for short I/O wrappers (the threadpool default is 40 workers)</li>
+          <li><span class="a">Process pool</span> (<code>concurrent.futures</code>) for genuinely CPU-bound work &mdash; one process per core</li>
+          <li><span class="a">Background queue</span> (Celery, RQ, dramatiq, arq) when the work is &gt; ~1 second or needs retries</li>
+          <li><span class="a">GPU inference</span> &mdash; async handler that <code>await</code>s the model client; never block the loop on <code>.generate()</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 10 — AUTHENTICATION ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">10</span><h2>Authentication</h2></div>
+  <p>FastAPI ships <span class="a">security utilities</span> &mdash; classes that double as dependencies and OpenAPI Security Schemes. The framework parses the right header / query / cookie; you decide how to verify.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>OAuth2 password / JWT</h3>
+<pre><code class="language-python">from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/token')
+
+def current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+) -&gt; User:
+    try:
+        payload = jwt.decode(token, settings.JWT_KEY,
+                             algorithms=['HS256'],
+                             audience=settings.AUD,
+                             issuer=settings.ISS)
+    except JWTError:
+        raise HTTPException(401, 'invalid token')
+    return User(**payload['user'])
+
+@app.get('/users/me', response_model=User)
+def me(user: Annotated[User, Depends(current_user)]):
+    return user</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Scopes</h3>
+<pre><code class="language-python">from fastapi.security import SecurityScopes
+
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl='/auth/token',
+    scopes={'read': 'Read', 'write': 'Modify'})
+
+def require_scopes(
+    scopes: SecurityScopes,
+    token: Annotated[str, Depends(oauth2_scheme)],
+):
+    payload = jwt.decode(token, ...)
+    have = set(payload.get('scope', '').split())
+    for s in scopes.scopes:
+        if s not in have: raise HTTPException(403)
+    return payload
+
+@app.delete('/items/{id}')
+def remove(id: int,
+           _: Annotated[dict, Security(require_scopes,
+                                        scopes=['write'])]):
+    ...</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>API keys</h3>
+<pre><code class="language-python">from fastapi.security import APIKeyHeader
+
+api_key = APIKeyHeader(name='X-API-Key', auto_error=False)
+
+def require_api_key(
+    key: Annotated[str | None, Depends(api_key)],
+    db:  Annotated[Session, Depends(get_db)],
+) -&gt; APIKey:
+    if not key: raise HTTPException(401)
+    row = db.query(APIKey).filter_by(hash=sha256(key)).first()
+    if not row or row.revoked: raise HTTPException(401)
+    return row</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>What FastAPI gives you</h3>
+        <ul>
+          <li><span class="b">Security utilities</span> &mdash; <code>OAuth2*</code>, <code>APIKey*</code>, <code>HTTPBearer</code>, <code>HTTPBasic</code></li>
+          <li><span class="b">OpenAPI security schemes</span> auto-populated; "Authorize" button in Swagger</li>
+          <li><span class="b">Composability</span> &mdash; the security dep can have its own deps (DB, cache, logger)</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>What you bring</h3>
+        <ul>
+          <li>Token signing / verification &mdash; <code>python-jose</code>, <code>authlib</code>, or hit your IdP's JWKS</li>
+          <li>Password hashing &mdash; <code>passlib[argon2]</code> or <code>argon2-cffi</code> directly</li>
+          <li>Refresh-token rotation, idle timeouts, revocation lists</li>
+          <li>Rate limiting on the auth endpoints &mdash; FastAPI doesn't ship one</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 11 — ERRORS & MIDDLEWARE ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">11</span><h2>Errors, Exception Handlers &amp; Middleware</h2></div>
+  <p>FastAPI turns <span class="a">raised exceptions</span> into HTTP responses. Hook in handlers for your own classes; add <span class="g">middleware</span> for cross-cutting concerns &mdash; timing, request IDs, CORS.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>HTTPException &amp; custom errors</h3>
+<pre><code class="language-python">from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+
+class NotFoundError(Exception):
+    def __init__(self, what: str): self.what = what
+
+@app.exception_handler(NotFoundError)
+async def not_found(_req, exc: NotFoundError):
+    return JSONResponse(404, content={
+      'error': {'code': 'not_found',
+                'message': f'{exc.what} not found'}})
+
+@app.get('/users/{id}')
+def get_user(id: int):
+    user = repo.find(id)
+    if not user: raise NotFoundError('user')
+    return user</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Override the validation error shape</h3>
+<pre><code class="language-python">from fastapi.exceptions import RequestValidationError
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(req, exc):
+    return JSONResponse(422, content={
+      'error': {
+        'code': 'validation_failed',
+        'details': exc.errors(),
+        'request_id': req.state.request_id,
+      }
+    })</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Middleware</h3>
+<pre><code class="language-python">from fastapi import Request
+from uuid import uuid4
+import time
+
+@app.middleware('http')
+async def request_id_and_timing(request: Request, call_next):
+    rid = request.headers.get('x-request-id') or str(uuid4())
+    request.state.request_id = rid
+
+    t0 = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        # logged by your structured logger via exception_handler
+        raise
+    dur_ms = (time.perf_counter() - t0) * 1000
+    response.headers['x-request-id'] = rid
+    response.headers['server-timing'] = f'app;dur={dur_ms:.1f}'
+    return response</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>CORS &amp; trusted host</h3>
+<pre><code class="language-python">from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+
+app.add_middleware(CORSMiddleware,
+  allow_origins=['https://app.example.com'],
+  allow_credentials=True,
+  allow_methods=['GET','POST','PUT','PATCH','DELETE'],
+  allow_headers=['authorization','content-type'])
+
+app.add_middleware(TrustedHostMiddleware,
+  allowed_hosts=['api.example.com', '*.example.com'])</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Order matters</h3>
+        <p>Middleware added later runs <em>outermost</em>. Put request-ID and timing <em>last</em> in code so they wrap everything &mdash; including CORS rejections.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 12 — BACKGROUND, STREAMING, WEBSOCKETS ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">12</span><h2>Background, Streaming &amp; WebSockets</h2></div>
+  <p>Three patterns for non-classical request/response: <span class="a"><code>BackgroundTasks</code></span> for fire-and-forget after the response, <span class="g"><code>StreamingResponse</code></span> for chunked output, and <span class="p">WebSockets</span> for full-duplex.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Background tasks</h3>
+<pre><code class="language-python">from fastapi import BackgroundTasks
+
+@app.post('/users')
+def create_user(
+    body: UserCreate,
+    bg: BackgroundTasks,
+    mailer: Annotated[Mailer, Depends(get_mailer)],
+):
+    user = users.create(body)
+    bg.add_task(mailer.send_welcome, user.email)
+    return user
+# &rarr; response sent immediately; mailer runs after.
+# Good for: emails, webhooks, audit logs, &lt;1s work.
+# For real retry / scheduling: use Celery / arq / dramatiq.</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Streaming &mdash; SSE / NDJSON</h3>
+<pre><code class="language-python">from fastapi.responses import StreamingResponse
+import json
+
+async def gen_events():
+    for i in range(10):
+        yield f'event: tick\ndata: {json.dumps({"i": i})}\n\n'
+        await asyncio.sleep(1)
+
+@app.get('/stream')
+async def stream():
+    return StreamingResponse(gen_events(),
+                             media_type='text/event-stream',
+                             headers={'Cache-Control': 'no-cache',
+                                      'X-Accel-Buffering': 'no'})
+
+# NDJSON
+async def gen_rows():
+    async for r in db.stream(query):
+        yield json.dumps(r).encode() + b'\n'
+
+@app.get('/users.ndjson')
+async def ndjson():
+    return StreamingResponse(gen_rows(),
+                             media_type='application/x-ndjson')</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>WebSockets</h3>
+<pre><code class="language-python">from fastapi import WebSocket, WebSocketDisconnect
+
+@app.websocket('/ws')
+async def ws(socket: WebSocket):
+    await socket.accept()
+    try:
+        async for msg in socket.iter_text():
+            await socket.send_text(f'echo: {msg}')
+    except WebSocketDisconnect:
+        ...
+    finally:
+        # cleanup &mdash; remove from any pubsub fanout, etc.
+        ...</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>LLM-streaming pattern</h3>
+<pre><code class="language-python">from fastapi.responses import StreamingResponse
+
+@app.post('/chat')
+async def chat(req: ChatReq):
+    async def tokens():
+        async for delta in llm.stream(req.messages):
+            yield f'data: {json.dumps({"delta": delta})}\n\n'
+        yield 'data: [DONE]\n\n'
+    return StreamingResponse(tokens(),
+        media_type='text/event-stream',
+        headers={'Cache-Control': 'no-cache',
+                 'X-Accel-Buffering': 'no'})</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Pitfalls</h3>
+        <ul>
+          <li><code>BackgroundTasks</code> blocks worker shutdown &mdash; long jobs go in a queue, not here</li>
+          <li>SSE behind nginx without <code>X-Accel-Buffering: no</code> &rarr; silent client</li>
+          <li>WS handlers don't auto-reconnect &mdash; client must handle it</li>
+          <li><code>StreamingResponse</code> + a <code>response_model</code> doesn't work &mdash; you're past Pydantic</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 13 — DATABASE ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">13</span><h2>Database &mdash; SQLAlchemy 2.0 &amp; Friends</h2></div>
+  <p>FastAPI doesn't bundle an ORM. Three real choices: <span class="a">SQLAlchemy 2.0 async</span> (the default), <span class="g">SQLModel</span> (Pydantic + SQLAlchemy by tiangolo), <span class="p">Tortoise ORM</span> (Django-ish async).</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>SQLAlchemy 2.0 async</h3>
+<pre><code class="language-python"># db.py
+from sqlalchemy.ext.asyncio import (
+    create_async_engine, async_sessionmaker, AsyncSession)
+from sqlalchemy.orm import DeclarativeBase
+
+engine = create_async_engine(settings.DATABASE_URL,
+                             pool_size=10, max_overflow=20)
+SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+
+class Base(DeclarativeBase): ...
+
+# deps.py
+async def get_db() -&gt; AsyncIterator[AsyncSession]:
+    async with SessionLocal() as s:
+        yield s
+
+# usage
+@app.get('/users/{id}', response_model=UserRead)
+async def get_user(id: int,
+                   db: Annotated[AsyncSession, Depends(get_db)]):
+    user = await db.get(User, id)
+    if not user: raise HTTPException(404)
+    return user</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Migrations &mdash; Alembic</h3>
+<pre><code class="language-bash">uv add alembic
+uv run alembic init alembic
+uv run alembic revision --autogenerate -m 'init'
+uv run alembic upgrade head</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>SQLModel &mdash; one class, two roles</h3>
+<pre><code class="language-python">from sqlmodel import SQLModel, Field
+
+class User(SQLModel, table=True):
+    id:    int | None = Field(default=None, primary_key=True)
+    email: str        = Field(index=True, unique=True)
+    name:  str
+# &rarr; this is BOTH the SQLAlchemy table and the Pydantic model
+#    used in request / response bodies.
+
+# pros: less duplication for simple CRUD
+# cons: ORM and DTO concerns become tangled in larger apps</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Patterns that pay off</h3>
+        <ul>
+          <li><span class="b">DTOs separate from ORM</span> &mdash; <code>UserCreate / UserRead / UserDB</code>; never expose the table directly past the boundary</li>
+          <li><span class="b">Repository functions</span> over the session &mdash; <code>users.by_email(db, email)</code> is testable; chained ORM calls in handlers aren't</li>
+          <li><span class="b">Transactions</span> &mdash; <code>async with db.begin():</code> at the boundary, not deep in services</li>
+          <li><span class="b">Pool sizing</span> &mdash; <code>pool_size</code> per worker &times; workers &lt; DB max_connections</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't</h3>
+        <ul>
+          <li>Don't share a session across requests &mdash; one per request, scoped via <code>Depends</code></li>
+          <li>Don't call sync ORM (psycopg2 / SQLAlchemy 1.4 sync) from <code>async def</code> handlers</li>
+          <li>Don't ship without a connection-pool monitor &mdash; pool exhaustion looks like "FastAPI is slow"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 14 — SETTINGS ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">14</span><h2>Configuration &mdash; Pydantic Settings</h2></div>
+  <p>Twelve-factor config, but typed. <span class="a"><code>pydantic-settings</code></span> reads env vars / <code>.env</code> / secrets dirs, validates types and defaults at boot, and surfaces missing values as <em>startup errors</em>, not runtime ones.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Settings model</h3>
+<pre><code class="language-python">from pydantic import Field, SecretStr, AnyHttpUrl, PostgresDsn
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file='.env', env_prefix='APP_',
+        env_nested_delimiter='__', case_sensitive=False)
+
+    env:        Literal['dev','staging','prod'] = 'dev'
+    debug:      bool = False
+    database_url: PostgresDsn
+    redis_url:    str
+    jwt_key:      SecretStr
+    cors_origins: list[AnyHttpUrl] = []
+    log_level:    Literal['DEBUG','INFO','WARNING','ERROR'] = 'INFO'
+
+    # nested groups via env_nested_delimiter
+    smtp__host: str | None = None
+    smtp__port: int = 587
+    smtp__user: str | None = None
+    smtp__pass: SecretStr | None = None
+
+settings = Settings()</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card green"><h3>Use from a dependency</h3>
+<pre><code class="language-python">from functools import lru_cache
+
+@lru_cache
+def get_settings() -&gt; Settings:
+    return Settings()
+
+@app.get('/config')
+def cfg(s: Annotated[Settings, Depends(get_settings)]):
+    return {'env': s.env, 'log_level': s.log_level}</code></pre>
+      </div>
+      <div class="card purple" style="margin-top:.3em;"><h3>Per-environment</h3>
+<pre><code class="language-bash"># .env.dev / .env.staging / .env.prod
+ENV_FILE=.env.prod uv run uvicorn app.main:app
+
+# in a Settings model:
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=os.getenv('ENV_FILE', '.env'))</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Why this is load-bearing</h3>
+        <ul>
+          <li>Type errors at <em>boot</em> &mdash; the pod that can't start is the one you want, not the one that crashes mid-request</li>
+          <li><code>SecretStr</code> hides secrets in <code>repr</code> / logs / <code>model_dump</code></li>
+          <li><code>.env</code> for local dev, real env vars for k8s &mdash; same code path</li>
+          <li>Tests override with <code>app.dependency_overrides[get_settings] = lambda: TestSettings()</code></li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't</h3>
+        <ul>
+          <li>Don't call <code>Settings()</code> at import time at module top &mdash; it makes tests harder; cache via <code>get_settings()</code></li>
+          <li>Don't log secrets &mdash; even with <code>SecretStr</code>, custom <code>__str__</code> in error paths can leak</li>
+          <li>Don't conflate config and feature flags &mdash; flags belong in a flag service / DB, not <code>Settings</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 15 — TESTING ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">15</span><h2>Testing</h2></div>
+  <p>FastAPI ships a <span class="a"><code>TestClient</code></span> built on httpx. The interesting feature is <span class="g"><code>app.dependency_overrides</code></span> &mdash; swap any <code>Depends</code> dependency in tests for a stub, with no patching.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Sync tests with TestClient</h3>
+<pre><code class="language-python">from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_health():
+    r = client.get('/healthz')
+    assert r.status_code == 200
+    assert r.json() == {'ok': True}
+
+def test_create_user():
+    r = client.post('/users', json={'email': 'a@x.io', 'name': 'A'})
+    assert r.status_code == 201
+    assert r.json()['email'] == 'a@x.io'</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Async tests with httpx</h3>
+<pre><code class="language-python">import pytest
+from httpx import AsyncClient, ASGITransport
+from app.main import app
+
+@pytest.mark.asyncio
+async def test_async():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport,
+                           base_url='http://test') as c:
+        r = await c.get('/healthz')
+        assert r.status_code == 200</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Dependency overrides &mdash; the killer feature</h3>
+<pre><code class="language-python">def fake_db():
+    return InMemoryDB()
+
+def fake_user():
+    return User(id=1, email='t@t', role='admin')
+
+app.dependency_overrides[get_db]      = fake_db
+app.dependency_overrides[current_user] = fake_user
+
+# now every endpoint sees the fakes &mdash; no monkeypatch, no patch.object
+client = TestClient(app)
+r = client.get('/users/me')
+assert r.status_code == 200
+
+# clean up between tests
+app.dependency_overrides.clear()</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Pytest fixtures pattern</h3>
+<pre><code class="language-python">@pytest.fixture
+def client(app_with_overrides):
+    return TestClient(app_with_overrides)
+
+@pytest.fixture
+def app_with_overrides():
+    app.dependency_overrides[get_db] = fake_db
+    yield app
+    app.dependency_overrides.clear()</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>What to fake, what to keep real</h3>
+        <ul>
+          <li><span class="r">Database</span>: real Postgres (Testcontainers) for integration; SQLite for fast unit; never mock</li>
+          <li><span class="r">Auth</span>: override <code>current_user</code>; don't mint real tokens in unit tests</li>
+          <li><span class="r">External HTTP</span>: <code>respx</code> (httpx) or <code>pytest-httpserver</code></li>
+          <li><span class="r">Queues / mailers</span>: in-memory fake; assert calls in the test</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 16 — OPENAPI ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">16</span><h2>OpenAPI &amp; Documentation</h2></div>
+  <p>OpenAPI generation is the <span class="a">point</span> of FastAPI &mdash; not a side feature. The schema you serve at <code>/openapi.json</code> is the same schema Swagger UI / ReDoc render, the same one you ship to clients, the same one CI validates against.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>What's free</h3>
+        <ul>
+          <li><span class="a">/openapi.json</span> &mdash; OpenAPI 3.1, regenerated on each request in dev</li>
+          <li><span class="a">/docs</span> &mdash; Swagger UI</li>
+          <li><span class="a">/redoc</span> &mdash; ReDoc</li>
+          <li>Path / query / body / header param entries</li>
+          <li>Request bodies and response schemas</li>
+          <li>Security schemes from the security utilities</li>
+          <li>Example payloads from <code>Field(examples=[...])</code></li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Tags, summaries, deprecation</h3>
+<pre><code class="language-python">@app.post('/items',
+          tags=['items'],
+          summary='Create an item',
+          description='Accepts a JSON body...',
+          response_description='The created item',
+          status_code=201,
+          deprecated=False)
+def create(item: ItemCreate): ...
+
+# group tags
+app = FastAPI(openapi_tags=[
+    {'name': 'items', 'description': 'Catalogue items'},
+    {'name': 'users', 'description': 'Account ops'},
+])</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Customise the schema</h3>
+<pre><code class="language-python">from fastapi.openapi.utils import get_openapi
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(title='My API', version='1.2.3',
+                         routes=app.routes)
+    schema['info']['x-logo'] = {'url': 'https://example/logo.png'}
+    schema['servers'] = [{'url': 'https://api.example.com'}]
+    app.openapi_schema = schema
+    return schema
+
+app.openapi = custom_openapi</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Export &amp; client generation</h3>
+<pre><code class="language-bash"># export the schema at build time
+uv run python -c \
+  'from app.main import app; import json; \
+   print(json.dumps(app.openapi()))' \
+  &gt; openapi.json
+
+# typescript types for the frontend
+npx openapi-typescript openapi.json -o api.ts
+
+# python client
+uv run datamodel-code-generator \
+  --input openapi.json --output client.py</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Hide what shouldn't be in the public schema</h3>
+        <ul>
+          <li>Internal / admin routes &mdash; <code>include_in_schema=False</code> on the operation or router</li>
+          <li><code>response_model_exclude_none=True</code> for cleaner output schemas</li>
+          <li>Mount Swagger UI behind admin auth in prod, or disable with <code>FastAPI(docs_url=None)</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 17 — LIFESPAN ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">17</span><h2>Lifespan &amp; Startup / Shutdown</h2></div>
+  <p>Where to open a DB pool, warm a model, connect to Redis, register Prometheus collectors. The modern pattern is <span class="a"><code>asynccontextmanager</code> + <code>FastAPI(lifespan=...)</code></span>.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Lifespan context manager</h3>
+<pre><code class="language-python">from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # &mdash;&mdash; startup &mdash;&mdash;
+    app.state.db    = create_engine_pool()
+    app.state.redis = await aioredis.from_url(settings.REDIS_URL)
+    app.state.model = load_model('llama-3-8b')
+    log.info('startup complete')
+
+    yield                            # app runs
+
+    # &mdash;&mdash; shutdown &mdash;&mdash;
+    await app.state.redis.close()
+    await app.state.db.dispose()
+    log.info('shutdown complete')
+
+app = FastAPI(lifespan=lifespan)</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Sharing state with handlers</h3>
+<pre><code class="language-python">def get_redis(req: Request):
+    return req.app.state.redis
+
+@app.get('/cache/{k}')
+async def cache(k: str,
+                r: Annotated[Redis, Depends(get_redis)]):
+    return {'value': await r.get(k)}</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Health vs ready</h3>
+<pre><code class="language-python">@app.get('/healthz')         # liveness: process alive
+def healthz(): return {'ok': True}
+
+@app.get('/readyz')          # readiness: deps OK + not draining
+async def readyz(req: Request):
+    if app.state.draining:
+        return JSONResponse(503, {'ok': False})
+    try:
+        async with req.app.state.db.connect() as c:
+            await c.execute(text('select 1'))
+        await req.app.state.redis.ping()
+    except Exception:
+        return JSONResponse(503, {'ok': False})
+    return {'ok': True}</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Graceful shutdown</h3>
+        <ul>
+          <li>Uvicorn handles SIGTERM &mdash; calls the lifespan teardown after in-flight requests drain</li>
+          <li>Set <code>app.state.draining = True</code> in a SIGTERM handler (or in lifespan exit) so <code>/readyz</code> goes 503 first &mdash; LB stops sending traffic</li>
+          <li>K8s: <code>terminationGracePeriodSeconds &gt; longest_request</code>; <code>preStop</code> hook of <code>sleep 5</code> avoids the LB race</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Avoid the deprecated form</h3>
+        <p>The old <code>@app.on_event('startup')</code> / <code>'shutdown'</code> decorators still work but are deprecated. Use lifespan; it integrates with Starlette and is what the docs recommend.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 18 — PERFORMANCE ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">18</span><h2>Performance</h2></div>
+  <p>FastAPI is rarely the bottleneck. Wins live in <span class="a">workers vs concurrency</span>, <span class="g">avoiding loop blocking</span>, <span class="p">payload size &amp; serialisation</span>, and <span class="b">downstream parallelism</span>.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Workers &amp; processes</h3>
+<pre><code class="language-bash"># single process, multi-coroutine &mdash; great for I/O
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# multi-process &mdash; one event loop per worker
+uvicorn app.main:app --workers 4
+
+# production: gunicorn manages uvicorn workers
+gunicorn app.main:app \
+  -k uvicorn.workers.UvicornWorker \
+  -w 4 -b 0.0.0.0:8000 \
+  --timeout 60 --graceful-timeout 30 \
+  --max-requests 10000 --max-requests-jitter 1000</code></pre>
+        <p style="margin-top:.3em;">Rule of thumb: <code>workers</code> &asymp; <code>2 &times; CPU</code>. In K8s prefer <em>one</em> worker per pod &mdash; the orchestrator scales pods.</p>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Newer ASGI servers</h3>
+        <ul>
+          <li><span class="g">Granian</span> &mdash; Rust-backed; faster than uvicorn on raw I/O</li>
+          <li><span class="g">Hypercorn</span> &mdash; HTTP/2, HTTP/3, trio support</li>
+          <li>For LLM streaming, uvicorn + <code>--http httptools</code> is usually plenty</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Avoid loop blocking</h3>
+        <ul>
+          <li><span class="p">No</span> <code>time.sleep</code>, <code>requests</code>, blocking <code>open()</code> in <code>async def</code></li>
+          <li><span class="p">Use</span> <code>asyncio.sleep</code>, <code>httpx.AsyncClient</code>, <code>aiofiles</code></li>
+          <li>If you must call sync code &mdash; <code>await run_in_threadpool(fn, ...)</code></li>
+          <li>Tune <code>anyio</code> threadpool: <code>BackgroundExecutor(max_workers=...)</code></li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Serialisation</h3>
+        <ul>
+          <li>Pydantic v2 is fast &mdash; usually the fastest part of your handler</li>
+          <li>Switch to <code>orjson</code> via <code>ORJSONResponse</code> for &gt; 2&times; on big lists</li>
+          <li><code>response_model_exclude_unset=True</code> &mdash; trims default fields from the wire</li>
+          <li>Stream large lists as NDJSON &mdash; constant memory</li>
+        </ul>
+<pre><code class="language-python">from fastapi.responses import ORJSONResponse
+app = FastAPI(default_response_class=ORJSONResponse)</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>If you're still slow</h3>
+        <ul>
+          <li>Profile with <code>py-spy record</code> against the prod-like image &mdash; intuition is wrong half the time</li>
+          <li>Watch the connection pool &mdash; pool exhaustion looks identical to "FastAPI is slow"</li>
+          <li>Measure p50 / p95 / p99 separately &mdash; a slow tail is usually a slow downstream</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 19 — DEPLOYMENT ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">19</span><h2>Deployment</h2></div>
+  <p>The shape that ships: <span class="a">multi-stage Dockerfile</span>, <span class="g">non-root user</span>, <span class="p">distroless or slim base</span>, <span class="b">healthchecks wired to <code>/healthz</code> &amp; <code>/readyz</code></span>.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Dockerfile (uv-based)</h3>
+<pre><code class="language-dockerfile">ARG PY=3.12
+FROM python:${PY}-slim-bookworm AS base
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+
+# &mdash;&mdash; deps stage &mdash;&mdash;
+FROM base AS deps
+RUN pip install --no-cache-dir uv
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev
+
+# &mdash;&mdash; runtime stage &mdash;&mdash;
+FROM base AS runtime
+RUN useradd -r -u 10001 app
+WORKDIR /app
+COPY --from=deps /app/.venv /app/.venv
+COPY app/ ./app/
+USER app
+ENV PATH=/app/.venv/bin:$PATH
+
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD python -c "import urllib.request,sys; \
+                 sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz').status==200 else 1)"
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card green"><h3>Kubernetes basics</h3>
+<pre><code class="language-yaml">spec:
+  template:
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: api
+        image: ghcr.io/me/api:1.2.3
+        ports: [{containerPort: 8000}]
+        livenessProbe:
+          httpGet: {path: /healthz, port: 8000}
+          periodSeconds: 10
+        readinessProbe:
+          httpGet: {path: /readyz, port: 8000}
+          periodSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests: {cpu: "200m", memory: "256Mi"}
+          limits:   {cpu: "1",    memory: "512Mi"}
+        lifecycle:
+          preStop:
+            exec: {command: ["sleep", "5"]}</code></pre>
+      </div>
+      <div class="card purple" style="margin-top:.3em;"><h3>Where to host</h3>
+        <table>
+          <thead><tr><th>Platform</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>K8s (EKS / GKE / AKS)</td><td>One worker per pod; HPA</td></tr>
+            <tr><td>Cloud Run / Lambda + Mangum</td><td>Stateless; cold starts; no WebSockets on Lambda</td></tr>
+            <tr><td>Render / Fly / Railway</td><td>Easy buttons; great for staging</td></tr>
+            <tr><td>VPS + nginx + systemd</td><td>Cheap, predictable; gunicorn + uvicorn</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't ship</h3>
+        <ul>
+          <li>As <code>root</code></li>
+          <li>With <code>--reload</code></li>
+          <li>With <code>/docs</code> public if the API is non-public</li>
+          <li>Without HTTPS at the proxy layer</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 20 — OBSERVABILITY ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">20</span><h2>Observability</h2></div>
+  <p>Three pillars, same as everywhere: <span class="a">structured logs</span>, <span class="g">metrics</span>, <span class="p">distributed traces</span>. The minimum competent setup is <span class="b">structlog + prometheus-fastapi-instrumentator + OpenTelemetry</span>.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Structured logs (structlog)</h3>
+<pre><code class="language-python">import structlog, logging
+
+structlog.configure(
+  processors=[
+    structlog.contextvars.merge_contextvars,
+    structlog.processors.add_log_level,
+    structlog.processors.TimeStamper(fmt='iso'),
+    structlog.processors.JSONRenderer(),
+  ],
+  wrapper_class=structlog.stdlib.BoundLogger,
+)
+log = structlog.get_logger()
+
+@app.middleware('http')
+async def log_request(req, call_next):
+    rid = req.headers.get('x-request-id') or str(uuid4())
+    structlog.contextvars.bind_contextvars(request_id=rid)
+    t0 = time.perf_counter()
+    resp = await call_next(req)
+    log.info('http_request',
+             method=req.method, path=req.url.path,
+             status=resp.status_code,
+             dur_ms=round((time.perf_counter()-t0)*1000, 1))
+    return resp</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Metrics &mdash; Prometheus</h3>
+<pre><code class="language-python">from prometheus_fastapi_instrumentator import Instrumentator
+Instrumentator().instrument(app).expose(app, endpoint='/metrics')
+# &rarr; per-route RED metrics + python_gc + process_cpu</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Tracing &mdash; OpenTelemetry</h3>
+<pre><code class="language-python">from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter \
+  import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi \
+  import FastAPIInstrumentor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+provider = TracerProvider(resource=Resource.create(
+    {'service.name': 'api', 'service.version': '1.2.3'}))
+provider.add_span_processor(
+    BatchSpanProcessor(OTLPSpanExporter()))
+trace.set_tracer_provider(provider)
+
+FastAPIInstrumentor.instrument_app(app)</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Hygiene</h3>
+        <ul>
+          <li>Redact <code>authorization</code>, <code>cookie</code>, <code>x-api-key</code> in logs</li>
+          <li>Never log request / response bodies in prod</li>
+          <li>Bound metric cardinality &mdash; never tag by user ID</li>
+          <li>Sample traces 1&ndash;5% with tail-sampling on errors</li>
+          <li>Bind <code>request_id</code> via <code>contextvars</code> &mdash; appears on every line</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>What to look at first</h3>
+        <ol>
+          <li>p95 / p99 per route</li>
+          <li>Error rate per route</li>
+          <li>DB pool wait time</li>
+          <li>Downstream call duration histograms</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 21 — SECURITY ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">21</span><h2>Security Hardening</h2></div>
+  <p>FastAPI is a thin layer; security is mostly composing the right middleware, validating at the boundary, and not trusting input. Six controls cover the OWASP Top 10 for an API.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Required middleware</h3>
+<pre><code class="language-python">from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from starlette.middleware.gzip import GZipMiddleware
+
+app.add_middleware(HTTPSRedirectMiddleware)
+app.add_middleware(TrustedHostMiddleware,
+  allowed_hosts=['api.example.com','*.example.com'])
+app.add_middleware(CORSMiddleware,
+  allow_origins=settings.cors_origins,
+  allow_credentials=True,
+  allow_methods=['GET','POST','PUT','PATCH','DELETE'],
+  allow_headers=['authorization','content-type'])
+app.add_middleware(GZipMiddleware, minimum_size=1024)</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Security headers</h3>
+<pre><code class="language-python">@app.middleware('http')
+async def security_headers(req, call_next):
+    resp = await call_next(req)
+    resp.headers['Strict-Transport-Security'] = \
+      'max-age=31536000; includeSubDomains; preload'
+    resp.headers['X-Content-Type-Options'] = 'nosniff'
+    resp.headers['Referrer-Policy'] = 'no-referrer'
+    resp.headers['X-Frame-Options'] = 'DENY'
+    resp.headers['Content-Security-Policy'] = \
+      "default-src 'none'; frame-ancestors 'none'"
+    return resp</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Body size &amp; rate limiting</h3>
+<pre><code class="language-python">from starlette.middleware.base import BaseHTTPMiddleware
+
+class BodySizeLimit(BaseHTTPMiddleware):
+    def __init__(self, app, max_bytes: int):
+        super().__init__(app); self.max = max_bytes
+    async def dispatch(self, req, call_next):
+        cl = int(req.headers.get('content-length', 0))
+        if cl &gt; self.max:
+            return JSONResponse(413, {'error': 'too large'})
+        return await call_next(req)
+
+app.add_middleware(BodySizeLimit, max_bytes=128 * 1024)
+
+# rate limiting: slowapi (limits + redis)
+from slowapi import Limiter
+limiter = Limiter(key_func=lambda r: r.client.host,
+                  storage_uri=settings.redis_url)
+app.state.limiter = limiter
+
+@limiter.limit('5/minute')
+@app.post('/auth/login')
+async def login(req: Request, body: Login): ...</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Input &amp; auth hygiene</h3>
+        <ul>
+          <li><span class="b">Validate every field</span> with Pydantic &mdash; <code>EmailStr</code>, <code>HttpUrl</code>, length / range</li>
+          <li><span class="b">Parameterise SQL</span> &mdash; never f-string a user value</li>
+          <li><span class="b">Hash passwords</span> with argon2 &mdash; <code>passlib[argon2]</code></li>
+          <li><span class="b">Verify JWTs strictly</span> &mdash; <code>iss / aud / exp / nbf</code></li>
+          <li><span class="b">Constant-time compare</span> for tokens / API keys &mdash; <code>secrets.compare_digest</code></li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't</h3>
+        <ul>
+          <li>Echo unsanitised user input in errors / headers / logs</li>
+          <li>Trust <code>X-Forwarded-For</code> without configuring trust at the proxy</li>
+          <li>Disable CORS &laquo;temporarily&raquo; with <code>'*'</code> &mdash; nothing is more permanent than a temporary fix</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 22 — VS ALTERNATIVES ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">22</span><h2>FastAPI vs Flask, Django REST, Litestar, Starlette</h2></div>
+  <p>The Python web stack splits along two axes: <span class="a">async / sync</span> and <span class="g">batteries / minimalism</span>. Pick by which axis matters more.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Criterion</th>
+        <th>FastAPI</th>
+        <th>Litestar</th>
+        <th>Starlette</th>
+        <th>Flask</th>
+        <th>Django REST</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="a">Style</span></td><td>Type hints + DI</td><td>Type hints + DI</td><td>ASGI toolkit</td><td>Decorators + context</td><td>Class-based views</td></tr>
+      <tr><td><span class="g">Validation</span></td><td>Pydantic v2</td><td>msgspec / Pydantic / attrs</td><td>None (BYO)</td><td>None (BYO)</td><td>DRF serializers</td></tr>
+      <tr><td><span class="p">Speed</span></td><td>Fast</td><td><span class="g">Faster</span> (msgspec)</td><td>Fast (raw)</td><td>Sync, slower</td><td>Sync, slowest</td></tr>
+      <tr><td><span class="b">Async</span></td><td><span class="g">Native</span></td><td><span class="g">Native</span></td><td><span class="g">Native</span></td><td>Limited</td><td>Limited (3.x)</td></tr>
+      <tr><td>OpenAPI</td><td><span class="g">Built-in</span></td><td><span class="g">Built-in</span></td><td>BYO</td><td>BYO (Spectree, etc.)</td><td>drf-spectacular</td></tr>
+      <tr><td>Batteries</td><td>Few</td><td>Few</td><td>None</td><td>Few</td><td><span class="g">Many</span> (admin/ORM)</td></tr>
+      <tr><td>Maturity</td><td>Mature (2018)</td><td>Active (2023+)</td><td>Mature</td><td>Mature</td><td>Very mature</td></tr>
+      <tr><td>Best for</td><td>JSON APIs, ML servers</td><td>Throughput, stricter typing</td><td>Building frameworks</td><td>Tiny apps, prototypes</td><td>Server-rendered + admin</td></tr>
+    </tbody>
+  </table>
+  <div class="cols cols-3" style="margin-top:.3em;">
+    <div class="card amber">
+      <h3>Choose FastAPI when</h3>
+      <ul>
+        <li>JSON API or ML / LLM model server</li>
+        <li>You want OpenAPI for free</li>
+        <li>You like Pydantic v2's validation feel</li>
+        <li>Most Python web jobs in 2026</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h3>Choose Litestar when</h3>
+      <ul>
+        <li>You want msgspec speed and stricter typing discipline</li>
+        <li>You prefer a richer DI / plugin model</li>
+        <li>You're starting a fresh greenfield project</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <h3>Choose Django / Flask when</h3>
+      <ul>
+        <li><span class="p">Django + DRF</span>: server-rendered HTML + admin + ORM in one</li>
+        <li><span class="p">Flask</span>: tiny scripts, glue services, minimum surface area</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 23 — PRODUCTION RECIPES ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">23</span><h2>Production Recipes</h2></div>
+  <p>The recurring patterns: <span class="a">repository functions</span> over the session, <span class="g">DTOs separate from ORM</span>, <span class="p">an outbox</span> for "DB write + queue", <span class="b">dependency overrides</span> for tests and feature flags.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Repository + service shape</h3>
+<pre><code class="language-python"># schemas/users.py &mdash; DTOs
+class UserCreate(BaseModel):
+    email: EmailStr; name: str
+class UserRead(BaseModel):
+    id: int; email: EmailStr; name: str
+
+# repositories/users.py
+async def create(db, data: UserCreate) -&gt; UserRead:
+    row = User(**data.model_dump())
+    db.add(row); await db.commit(); await db.refresh(row)
+    return UserRead.model_validate(row, from_attributes=True)
+
+# services/users.py
+async def signup(db, queue, data: UserCreate) -&gt; UserRead:
+    if await users_repo.by_email(db, data.email):
+        raise HTTPException(409)
+    user = await users_repo.create(db, data)
+    await queue.enqueue('emails.welcome', user.id)
+    return user
+
+# api/v1/users.py
+@router.post('/', response_model=UserRead, status_code=201)
+async def signup_endpoint(
+    body: UserCreate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    q:  Annotated[Queue,        Depends(get_queue)],
+):
+    return await users_service.signup(db, q, body)</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card green"><h3>Outbox pattern</h3>
+<pre><code class="language-python">async def signup(db, data):
+    async with db.begin():
+        user = await users_repo.create(db, data)
+        await db.execute(insert(Outbox).values(
+            kind='emails.welcome',
+            payload={'user_id': user.id}))
+    # a relay process polls outbox and pushes to the queue
+    return user</code></pre>
+      </div>
+      <div class="card purple" style="margin-top:.3em;"><h3>Versioned routers</h3>
+<pre><code class="language-python">from fastapi import APIRouter
+
+v1 = APIRouter(prefix='/v1')
+v1.include_router(users_router, prefix='/users', tags=['v1.users'])
+v1.include_router(items_router, prefix='/items', tags=['v1.items'])
+
+v2 = APIRouter(prefix='/v2')
+v2.include_router(users_router_v2, prefix='/users', tags=['v2.users'])
+
+app.include_router(v1)
+app.include_router(v2)</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Feature flags via dependency overrides</h3>
+<pre><code class="language-python">def feature_x_enabled() -&gt; bool:
+    return get_settings().flags.feature_x
+
+@app.get('/x')
+def x(enabled: Annotated[bool, Depends(feature_x_enabled)]):
+    if not enabled: raise HTTPException(404)
+    ...
+# tests can flip the flag with dependency_overrides[feature_x_enabled]</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 24 — SUMMARY ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">24</span><h2>Summary &amp; Next Steps</h2></div>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Why FastAPI earns its keep</h3>
+        <ul>
+          <li><span class="a">Type hints become the API</span> &mdash; one declaration drives validation, serialisation, DI and OpenAPI</li>
+          <li><span class="a">Async-first</span> with a graceful sync escape hatch via the threadpool</li>
+          <li><span class="a">Pydantic v2 is fast</span> &mdash; the Rust core leaves serialisation off the hot list</li>
+          <li><span class="a">DI via <code>Depends()</code></span> is small enough to hold in your head, big enough to compose policies</li>
+          <li><span class="a">OpenAPI for free</span> &mdash; clients, contract tests, mock servers all fall out</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Take-aways</h3>
+        <ul>
+          <li>Use <code>Annotated[T, Query/Path/Body(...)]</code> for type-checker-friendly signatures</li>
+          <li>One <code>Depends()</code> chain per concern: DB, current user, scope guard</li>
+          <li>Lifespan over deprecated <code>on_event</code></li>
+          <li>DTOs separate from ORM &mdash; <code>UserCreate / UserRead / UserDB</code></li>
+          <li><code>app.dependency_overrides</code> in tests, not monkeypatch</li>
+          <li>Pydantic Settings for config; fail at boot, not at request time</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Production checklist</h3>
+        <ul>
+          <li>Lifespan opens/closes pools; <code>/healthz</code> + <code>/readyz</code> wired</li>
+          <li>HTTPS + TrustedHost + CORS allow-list + CSP</li>
+          <li>Rate limit on auth endpoints; body-size cap globally</li>
+          <li>Structured logs (structlog), Prometheus, OpenTelemetry</li>
+          <li>Non-root container, distroless / slim base, K8s probes &amp; preStop</li>
+          <li>Tests use <code>TestClient</code> + <code>dependency_overrides</code></li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Next steps</h3>
+        <ul>
+          <li>Build a small CRUD service: FastAPI + SQLAlchemy 2.0 async + Alembic + uvicorn + Docker</li>
+          <li>Wire <code>structlog</code> + Prometheus + OTel; ship dashboards</li>
+          <li>Generate a TypeScript client from <code>openapi.json</code></li>
+          <li>Add a Testcontainers Postgres test suite</li>
+          <li>Try Litestar on a side project &mdash; see what stricter typing buys you</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Essential reading</h3>
+        <ul>
+          <li><a href="https://fastapi.tiangolo.com/">fastapi.tiangolo.com</a> &mdash; the canonical tutorial</li>
+          <li><a href="https://docs.pydantic.dev/">Pydantic docs</a> &mdash; Pydantic is half the framework</li>
+          <li><a href="https://www.starlette.io/">Starlette docs</a> &mdash; what's underneath</li>
+          <li><a href="https://www.uvicorn.org/">uvicorn docs</a> &mdash; the server you ship behind</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/highlight/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    controls: true,
+    progress: true,
+    transition: 'slide',
+    width: 1280,
+    height: 800,
+    margin: 0.04,
+    plugins: [ RevealHighlight, RevealNotes ]
+  });
+</script>
+</body>
+</html>
